@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TOOP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c19c8869cd6cc61c9c6271294b39c92b583cbb8d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cb62ea2e29fff9a471624ae1bf94778efeabb259")]
 [assembly: System.Reflection.AssemblyProductAttribute("TOOP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TOOP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
