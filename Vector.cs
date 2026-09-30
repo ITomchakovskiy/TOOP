@@ -54,6 +54,7 @@ public class Vector : IVector
     public static Vector operator -(Vector A, Vector B) => A + (-B);
 
     public static Vector operator *(Vector A, double val) => new([..A.Select(d => d*val)]);
+    public static Vector operator *(double val, Vector A) => A * val;
 
     public static Vector operator /(Vector A, double val) => A * (1d / val);
     
