@@ -7,9 +7,9 @@ namespace TOOP.Extensions;
 
 public static class VectorExtension
 {
-    public static int Find(this IVector collection, double xValue)
+    internal static int Find(this IVector collection, double xValue)
     {
-        var knotsCount = collection.Count;
+        var knotsCount = collection.Length;
         if (xValue.IsEqualsPrecision(collection[knotsCount - 1]))
         {
             return knotsCount - 2;
