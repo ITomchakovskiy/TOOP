@@ -13,7 +13,6 @@ interface IVector : IEnumerable<double>
     int Length {get;}
     double Norm();
 }
-interface IMatrix {}
 public class Vector : IVector
 {
     private double[] values;
