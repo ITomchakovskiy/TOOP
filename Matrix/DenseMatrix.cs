@@ -1,68 +1,67 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic;
 
-namespace TOOP;
+namespace TOOP.Matrix;
 
-enum MatrixSymmetry {Asymmetric, SymmetricProfile, Symmetric}
-
-interface IMatrix : IEnumerable<IEnumerable<double>>
+class GeneralDenseMatrix : IMatrix
 {
-    double this[int index1, int index2] {get;}
-    int RowsCount {get;}
-    int ColumnsCount {get;}
-    MatrixSymmetry Symmetry {get;}
-    bool IsSquare {get;}
-}
-
-interface IMatrixOperators<TSelf> where TSelf : IMatrixOperators<TSelf>, IMatrix
-{
-    public static abstract TSelf operator +(TSelf A, TSelf B);
-    public static abstract TSelf operator -(TSelf A, TSelf B);
-    public static abstract TSelf operator *(TSelf A, TSelf B);
-    public static abstract TSelf operator *(TSelf A, double coef);
-    public static abstract TSelf operator *(double coef, TSelf A);
-    public static abstract TSelf operator /(TSelf A, double coef);
-    public static abstract IVector operator *(TSelf A, IVector b);
-    TSelf Transpose();
-}
-
-class DenseMatrix : IMatrix, IMatrixOperators<DenseMatrix>
-{
-    public DenseMatrix(IEnumerable<IEnumerable<double>> _values)
+    public GeneralDenseMatrix(IEnumerable<IEnumerable<double>> _values, MatrixSymmetry? symmetry = null, bool? isPositiveDefinite = null)
     {
         values = [.. _values.Select(i => i.ToArray())];
-        if(IsSquare)
+        if(symmetry is null)
         {
-            bool isSymmetric = true;
-            for(int i = 0; i < values.Length; ++i)
+            if(IsSquare)
             {
-                for(int j = 0; j < i; ++j)
-                    if(values[i][j] != values[j][i]) isSymmetric = false;
+                bool isSymmetric = true;
+                for(int i = 0; i < values.Length; ++i)
+                {
+                    for(int j = 0; j < i; ++j)
+                        if(values[i][j] != values[j][i]) isSymmetric = false;
+                }
+                if(isSymmetric) Symmetry = MatrixSymmetry.Symmetric;
+                else Symmetry = MatrixSymmetry.Asymmetric;
             }
-            if(isSymmetric) Symmetry = MatrixSymmetry.Symmetric;
             else Symmetry = MatrixSymmetry.Asymmetric;
         }
-        else Symmetry = MatrixSymmetry.Asymmetric;
+        else Symmetry = (MatrixSymmetry)symmetry;
+
+        IsPositiveDefinite = isPositiveDefinite;
     }
-    private readonly double[][] values;
-    public MatrixSymmetry Symmetry {get;}
+
+    public GeneralDenseMatrix(IEnumerable<IEnumerable<double>> _values, bool? isPositiveDefinite) : this(_values, null, isPositiveDefinite) {}
+
+    public GeneralDenseMatrix(IMatrix matrix) : this(matrix, matrix.Symmetry, matrix.IsPositiveDefinite) {}
+
+    protected readonly double[][] values;
+    public MatrixSymmetry Symmetry {get;} //if explicitly symmetric only lower triangle is accessed
 
     public bool IsSquare => RowsCount == ColumnsCount;
 
     public int RowsCount => values.Length;
 
-    public int ColumnsCount => values[0].Length;
+    public int ColumnsCount => values[^1].Length;
 
-    public double this[int index1, int index2] => values[index1][index2];
+    public bool? IsPositiveDefinite {get; set;} = null;
 
-    public DenseMatrix Transpose()
+    public double this[int index1, int index2] => index1 >= index2 ? values[index1][index2] : values[index2][index1];
+
+    public IEnumerator<IEnumerable<double>> GetEnumerator() => values.AsEnumerable().GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => values.GetEnumerator();
+}
+
+class DenseMatrix : GeneralDenseMatrix, IMatrixOperators<DenseMatrix>, IMatrixOperators
+{
+    public DenseMatrix(IEnumerable<IEnumerable<double>> _values, MatrixSymmetry? symmetry = null, bool? isPositiveDefinite = null) : base(_values, symmetry, isPositiveDefinite) {}
+    public DenseMatrix(IEnumerable<IEnumerable<double>> _values, bool? isPositiveDefinite) : base(_values, isPositiveDefinite) {} 
+    public DenseMatrix(IMatrix matrix) : base(matrix) {}
+
+    public IMatrix Transpose()
     {
-        if(Symmetry == MatrixSymmetry.Symmetric) return new DenseMatrix(values);
+        if(Symmetry == MatrixSymmetry.Symmetric) return this;
         double[][] newValues = new double[ColumnsCount][];
         for(int i = 0; i < newValues.Length; ++i) newValues[i] = new double[RowsCount];
         for(int i = 0; i < RowsCount; ++i)
@@ -70,14 +69,26 @@ class DenseMatrix : IMatrix, IMatrixOperators<DenseMatrix>
             for(int j = 0; j < ColumnsCount; ++j)
                 newValues[j][i] = values[i][j];
         }
-        return new(newValues);
+        return new DenseMatrix(newValues);
     }
-    public IEnumerator<IEnumerable<double>> GetEnumerator() => values.AsEnumerable().GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => values.GetEnumerator();
+
+    private DenseMatrix ToAsymmetricFormat()
+    {
+        if(Symmetry != MatrixSymmetry.Symmetric) return this;
+        double[][] newValues = new double[RowsCount][];
+        for(int i = 0; i < newValues.Length; ++i) newValues[i] = new double[ColumnsCount];
+        for(int i = 0; i < newValues.Length; ++i)
+        {
+            for(int j = 0; j < newValues[0].Length; ++j)
+                newValues[i][j] = this[i,j];
+        }
+        return new(newValues, Symmetry, IsPositiveDefinite);
+    }
 
     public static DenseMatrix operator +(DenseMatrix A, DenseMatrix B)
     {
         if(A.RowsCount != B.RowsCount || A.ColumnsCount != B.ColumnsCount) throw new ArgumentException("not compatible matrices");
+        A = A.ToAsymmetricFormat(); B = B.ToAsymmetricFormat();
         double[][] newValues = [.. A.Select((arow,i) => arow.Select((ael,j) => ael + B[i,j]).ToArray())];
         return new(newValues);
     }
@@ -85,6 +96,7 @@ class DenseMatrix : IMatrix, IMatrixOperators<DenseMatrix>
     public static DenseMatrix operator -(DenseMatrix A, DenseMatrix B)
     {
         if(A.RowsCount != B.RowsCount || A.ColumnsCount != B.ColumnsCount) throw new ArgumentException("not compatible matrices");
+        A = A.ToAsymmetricFormat(); B = B.ToAsymmetricFormat();
         double[][] newValues = [.. A.Select((arow,i) => arow.Select((ael,j) => ael - B[i,j]).ToArray())];
         return new(newValues);
     }
@@ -127,4 +139,3 @@ class DenseMatrix : IMatrix, IMatrixOperators<DenseMatrix>
         return new Vector(newValues);
     }
 }
-

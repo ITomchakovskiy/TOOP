@@ -17,7 +17,7 @@ class ConjugateGradientMethodOptimizator : IOptimizator
         throw new ArgumentException("objective functional doesn't implement IDifferentiableFunctional interface");
     }
 
-    private IVector Minimize(IDifferentiableFunctional objective, IParametricFunction function, IVector initialParameters, OneDimensionalOptimizator optimizator, IVector? minimumParameters, IVector? maximumParameters, double precision = 1.0E-7)
+    public IVector Minimize(IDifferentiableFunctional objective, IParametricFunction function, IVector initialParameters, OneDimensionalOptimizator optimizator, IVector? minimumParameters, IVector? maximumParameters, double precision = 1.0E-7)
     {
         Vector parameters = new([.. initialParameters]);
         var func = function.Bind(parameters);

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Functionals;
 using Functions;
 using TOOP;
+using TOOP.Matrix;
 
 namespace Functions
 {
