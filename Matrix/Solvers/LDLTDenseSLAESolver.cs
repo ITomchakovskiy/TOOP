@@ -32,6 +32,7 @@ class LDLTDenseSLAESolver : ISLAESolver
                 LDLTValues[i][j] = (matrix[i,j] - sumL) / di;
             }
         }
+        decomposedMatrix = matrix;
         LDLT = new GeneralDenseMatrix(LDLTValues);
     }
     bool ISLAESolver.Solve(IMatrix? matrix, IVector rightSide, out IVector result, double? precision, int? maxIterationCount, IVector? initialSolution)

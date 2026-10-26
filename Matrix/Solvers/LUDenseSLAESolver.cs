@@ -38,7 +38,7 @@ class LUDenseSLAESolver : ISLAESolver
                 LUValues[i][j] = (matrix[i,j] - sumU) / LUValues[i][i];
             }
         }
-
+        DecomposedMatrix = matrix;
         LU = new(LUValues, MatrixSymmetry.Asymmetric);
     }
 

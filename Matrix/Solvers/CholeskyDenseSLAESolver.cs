@@ -39,7 +39,7 @@ class CholeskyDenseSLAESolver : ISLAESolver
                 LLTValues[i][j] = (matrix[i,j] - sumL) / LLTValues[j][j];
             }
         }
-
+        decomposedMatrix = matrix;
         LLT = new(LLTValues, MatrixSymmetry.Symmetric);
     }
     bool ISLAESolver.Solve(IMatrix? matrix, IVector rightSide, out IVector result, double? precision, int? maxIterationCount, IVector? initialSolution)
