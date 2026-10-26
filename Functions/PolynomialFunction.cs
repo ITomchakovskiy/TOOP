@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TOOP.Functions;
 
-class PolynomialFunction : IParametricFunction
+public class PolynomialFunction : IParametricFunction
 {
     public IFunction Bind(IVector parameters)
     {
@@ -19,9 +19,14 @@ class PolynomialFunction : IParametricFunction
         {
             var x = point[0];
 
-            return parameters
-                .Select((p, index) => p * double.Pow(x, index))
-                .Sum();
+            double pow = 1d, res = 0d;
+            for(int i = 0; i < parameters.Length; ++i)
+            {
+                res += parameters[i] * pow;
+                pow *= x;
+            }
+
+            return res;
         }
     }
 }
