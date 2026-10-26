@@ -33,6 +33,10 @@ class GaussNewtonOptimizator : IOptimizator
             if(solver.Solve(A, b, out IVector delta,null,null,null))
             if(delta.Norm() < precision) return parameters;
             parameters += new Vector([..delta]);
+            if(minimumParameters is not null)
+                parameters = new([..parameters.Select((el,i) => Math.Max(el, minimumParameters[i]))]);
+            if(maximumParameters is not null)
+                parameters = new([..parameters.Select((el,i) => Math.Min(el, maximumParameters[i]))]);
         }
         return parameters;
     }

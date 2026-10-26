@@ -27,6 +27,10 @@ class ConjugateGradientMethodOptimizator : IOptimizator
         {
             double coefficient = optimizator.Minimize(objective, function, parameters, direction);
             parameters += coefficient * direction;
+            if(minimumParameters is not null)
+                parameters = new([..parameters.Select((el,i) => Math.Max(el, minimumParameters[i]))]);
+            if(maximumParameters is not null)
+                parameters = new([..parameters.Select((el,i) => Math.Min(el, maximumParameters[i]))]);
             func = function.Bind(parameters);
             var curGradient = new Vector([.. objective.Gradient(func)]);
             double omega = curGradient.Norm() / gradient.Norm(); omega *= omega;
