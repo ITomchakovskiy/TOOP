@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TOOP.Functions;
 
-class PiecewiseLinearFunction : IParametricFunction
+public class PiecewiseLinearFunction : IParametricFunction
 {
     public IFunction Bind(IVector parameters)
     {
@@ -75,9 +75,10 @@ class PiecewiseLinearFunction : IParametricFunction
                 throw new ArgumentOutOfRangeException(nameof(point), "Gradient is not defined outside (x0, xN)");
 
             var segmentIndex = knots.Find(x);
-            if (x.IsEqualsPrecision(knots[segmentIndex]) ||
-                x.IsEqualsPrecision(knots[segmentIndex + 1]))
-                throw new InvalidOperationException("Gradient is not defined in knots.");
+            //  could lead to problems during minimization
+            // if (x.IsEqualsPrecision(knots[segmentIndex]) ||  
+            //     x.IsEqualsPrecision(knots[segmentIndex + 1]))
+            //     throw new InvalidOperationException("Gradient is not defined in knots.");
 
             var i = segmentIndex;
             var x0 = knots[i];
@@ -92,7 +93,7 @@ class PiecewiseLinearFunction : IParametricFunction
             var gradient = new Vector(2 * knots.Length);
 
             // ∂f/∂x_i и ∂f/∂x_{i+1}
-            gradient[2 * i] = -s * (1 + t);
+            gradient[2 * i] = -s * (x1 - x) / dx;
             gradient[2 * (i + 1)] = -s * t;
 
             // ∂f/∂y_i и ∂f/∂y_{i+1}
