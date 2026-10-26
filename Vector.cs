@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TOOP;
 
-interface IVector : IEnumerable<double>
+public interface IVector : IEnumerable<double>
 {
     double this[int index] {get; set;}
     int Length {get;}

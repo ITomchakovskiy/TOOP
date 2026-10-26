@@ -8,7 +8,7 @@ using TOOP;
 
 namespace Optimizators;
 
-class SimulatedAnnealingOptimizator : IOptimizator
+public class SimulatedAnnealingOptimizator : IOptimizator
 {
     public SimulatedAnnealingOptimizator(int seed) {random = new Random(seed);}
     public SimulatedAnnealingOptimizator() {random = new Random();}

@@ -8,7 +8,7 @@ using Real = double;
 
 namespace Functionals;
 
-class LInfNorm : IFunctional
+public class LInfNorm : IFunctional
 {
     readonly IVector[] _points;
     readonly Real[] _expectedValues;

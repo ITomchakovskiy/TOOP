@@ -8,7 +8,7 @@ using Real = double;
 
 namespace Functionals;
 
-class L1Norm : IDifferentiableFunctional
+public class L1Norm : IDifferentiableFunctional
 {
     readonly IVector[] _points;
     readonly Real[] _expectedValues;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TOOP.Functions;
 
-class LinearFunction : IParametricFunction
+public class LinearFunction : IParametricFunction
 {
     public IFunction Bind(IVector parameters)
     {

@@ -9,17 +9,17 @@ using TOOP.Matrix;
 
 namespace Functions
 {
-    interface IParametricFunction
+    public interface IParametricFunction
     {
         IFunction Bind(IVector parameters);
     }
 
-    interface IFunction
+    public interface IFunction
     {
         double Value(IVector point);
     }
 
-    interface IDifferentiableFunction : IFunction
+    public interface IDifferentiableFunction : IFunction
     {
         // По параметрам исходной IParametricFunction
         IVector Gradient(IVector point);
@@ -28,17 +28,17 @@ namespace Functions
 
 namespace Functionals
 {
-    interface IFunctional
+    public interface IFunctional
     {
         double Value(IFunction function);
     }
 
-    interface IDifferentiableFunctional : IFunctional
+    public interface IDifferentiableFunctional : IFunctional
     {
         IVector Gradient(IFunction function);
     }
 
-    interface ILeastSquaresFunctional : IFunctional
+    public interface ILeastSquaresFunctional : IFunctional
     {
         IVector Residual(IFunction function);
         IMatrix Jacobian(IFunction function);
@@ -47,7 +47,7 @@ namespace Functionals
 
 namespace Optimizators
 {
-    interface IOptimizator
+    public interface IOptimizator
     {
         IVector Minimize(IFunctional objective,
                          IParametricFunction function,

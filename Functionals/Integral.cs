@@ -7,7 +7,7 @@ using Real = double;
 
 namespace Functionals;
 
-class Integral : IFunctional
+public class Integral : IFunctional
 {
     readonly Real _volume;
     readonly IVector[] _samples;

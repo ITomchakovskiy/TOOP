@@ -8,7 +8,7 @@ using TOOP;
 
 namespace Optimizators;
 
-abstract class OneDimensionalOptimizator
+public abstract class OneDimensionalOptimizator
 {
     public abstract double Minimize(IFunctional objective,
                                     IParametricFunction function,
@@ -50,7 +50,7 @@ abstract class OneDimensionalOptimizator
     }
 }
 
-class GoldenSectionSearch : OneDimensionalOptimizator
+public class GoldenSectionSearch : OneDimensionalOptimizator
 {
     private readonly double coef = (3d - Math.Sqrt(5d)) / 2d;
     private double calcLeftPoint(double a, double b) => a * (1d - coef) + b * coef;

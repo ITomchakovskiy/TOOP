@@ -8,7 +8,7 @@ using TOOP;
 
 namespace Optimizators;
 
-class ConjugateGradientMethodOptimizator : IOptimizator
+public class ConjugateGradientMethodOptimizator : IOptimizator
 {
     public IVector Minimize(IFunctional objective, IParametricFunction function, IVector initialParameters, IVector? minimumParameters = null, IVector? maximumParameters = null)
     {

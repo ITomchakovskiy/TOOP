@@ -8,9 +8,9 @@ using Microsoft.VisualBasic;
 
 namespace TOOP.Matrix;
 
-enum MatrixSymmetry {Asymmetric, SymmetricProfile, Symmetric}
+public enum MatrixSymmetry {Asymmetric, SymmetricProfile, Symmetric}
 
-interface IMatrix : IEnumerable<IEnumerable<double>>
+public interface IMatrix : IEnumerable<IEnumerable<double>>
 {
     double this[int index1, int index2] {get;}
     int RowsCount {get;}
@@ -36,7 +36,7 @@ interface IMatrixOperators
     IMatrix Transpose();
 }
 
-static class MatrixOperators
+public static class MatrixOperators
 {
     private static IMatrix MatrixMatrixOperator(IMatrix A, IMatrix B, 
                                   Func<DenseMatrix, DenseMatrix, DenseMatrix> fDense)
