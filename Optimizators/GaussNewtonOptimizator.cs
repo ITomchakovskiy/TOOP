@@ -11,7 +11,7 @@ using TOOP.Matrix.Solvers;
 
 namespace Optimizators;
 
-class GaussNewtonOptimizator : IOptimizator
+public class GaussNewtonOptimizator : IOptimizator
 {
     private const double eps = 1.0E-7;
     private const int maxiter = 1000000;
