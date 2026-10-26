@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Functions;
 using TOOP;
-
+using TOOP.Matrix;
 using Real = double;
 
 namespace Functionals;
 
-class L2Norm : IDifferentiableFunctional, ILeastSquaresFunctional
+public class L2Norm : IDifferentiableFunctional, ILeastSquaresFunctional
 {
     readonly IVector[] _points;
     readonly Real[] _expectedValues;
@@ -77,6 +77,6 @@ class L2Norm : IDifferentiableFunctional, ILeastSquaresFunctional
             return new Vector(jacobian.ColumnsCount);
         }
 
-        return new Vector((jacobian.Transpose() * residual).ToArray()) / norm;
+        return new Vector(((DenseMatrix)jacobian.Transpose() * residual).ToArray()) / norm;
     }
 }
