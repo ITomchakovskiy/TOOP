@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TOOP.Matrix;
 
-class GeneralDenseMatrix : IMatrix
+public class GeneralDenseMatrix : IMatrix
 {
     public GeneralDenseMatrix(IEnumerable<IEnumerable<double>> _values, MatrixSymmetry? symmetry = null, bool? isPositiveDefinite = null)
     {
@@ -47,13 +47,13 @@ class GeneralDenseMatrix : IMatrix
 
     public bool? IsPositiveDefinite {get; set;} = null;
 
-    public double this[int index1, int index2] => index1 >= index2 ? values[index1][index2] : values[index2][index1];
+    public double this[int index1, int index2] => index1 < index2 && Symmetry == MatrixSymmetry.Symmetric  ? values[index2][index1] : values[index1][index2];
 
     public IEnumerator<IEnumerable<double>> GetEnumerator() => values.AsEnumerable().GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => values.GetEnumerator();
 }
 
-class DenseMatrix : GeneralDenseMatrix, IMatrixOperators<DenseMatrix>, IMatrixOperators
+public class DenseMatrix : GeneralDenseMatrix, IMatrixOperators<DenseMatrix>, IMatrixOperators
 {
     public DenseMatrix(IEnumerable<IEnumerable<double>> _values, MatrixSymmetry? symmetry = null, bool? isPositiveDefinite = null) : base(_values, symmetry, isPositiveDefinite) {}
     public DenseMatrix(IEnumerable<IEnumerable<double>> _values, bool? isPositiveDefinite) : base(_values, isPositiveDefinite) {} 
