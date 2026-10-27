@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.WebSockets;
 
 namespace TOOP.Functions;
 
@@ -53,10 +54,12 @@ public class PiecewiseLinearFunction : IParametricFunction
         {
             var x = point[0];
 
-            if (x < knots.First() || x > knots.Last())
-            {
-                throw new ArgumentOutOfRangeException(nameof(point), "Point is out of domain [x0, xN]");
-            }
+            // if (x < knots.First() || x > knots.Last())
+            // {
+            //     throw new ArgumentOutOfRangeException(nameof(point), "Point is out of domain [x0, xN]");
+            // }
+            if(x < knots.First()) return values.First();
+            else if(x > knots.Last()) return values.Last();
 
             if (x.IsEqualsPrecision(knots.Last()))
             {
@@ -71,8 +74,13 @@ public class PiecewiseLinearFunction : IParametricFunction
         {
             var x = point[0];
 
-            if (x <= knots.First() || x >= knots.Last())
-                throw new ArgumentOutOfRangeException(nameof(point), "Gradient is not defined outside (x0, xN)");
+            var gradient = new Vector(2 * knots.Length);
+
+            if(x <= knots.First()) {gradient[1] = 1d; return gradient;}
+            else if(x >= knots.Last()) {gradient[^1] = 1d; return gradient;}
+
+            // if (x <= knots.First() || x >= knots.Last())
+            //     throw new ArgumentOutOfRangeException(nameof(point), "Gradient is not defined outside (x0, xN)");
 
             var segmentIndex = knots.Find(x);
             //  could lead to problems during minimization
@@ -90,7 +98,7 @@ public class PiecewiseLinearFunction : IParametricFunction
             var t = (x - x0) / dx;
             var s = (y1 - y0) / dx;
 
-            var gradient = new Vector(2 * knots.Length);
+            
 
             // ∂f/∂x_i и ∂f/∂x_{i+1}
             gradient[2 * i] = -s * (x1 - x) / dx;
