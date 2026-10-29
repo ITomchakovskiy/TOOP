@@ -10,25 +10,28 @@ namespace TOOP.Functions;
 
 public class PiecewiseLinearFunction : IParametricFunction
 {
-    public IFunction Bind(IVector parameters)
+    private const double eps = 1.0E-10;
+    public IFunction Bind(IVector parameters) //parameters are starting point x, f(starting x) and then pairs of steps and f(previous x + step)
     {
-        if (parameters.Length < 4 || parameters.Length % 2 != 0)
+        if (parameters.Length < 2 || parameters.Length % 2 != 0)
         {
-            throw new ArgumentException("Expected even number of parameters >= 4: (x0, y0, x1, y1, ...)");
+            throw new ArgumentException("Expected even number of parameters >= 2: (x0, y0, x1, y1, ...)");
         }
 
         var knotCount = parameters.Length / 2;
         var knots = new Vector(knotCount);
         var values = new Vector(knotCount);
 
-        for (var i = 0; i < knotCount; i++)
+        knots[0] = parameters[0];
+        values[0] = parameters[1];
+        for (var i = 1; i < knotCount; i++)
         {
-            knots[i] = parameters[2 * i];
+            knots[i] = knots[i-1] + parameters[2 * i]; //X(k+1) = X(k) + Hx(k)
             values[i] = parameters[2 * i + 1];
 
-            if (i > 0 && knots[i] < knots[i - 1])
+            if (parameters[2 * i] < eps)
             {
-                throw new ArgumentException("Abscissas do not satisfy the condition: x0 < x1 < ... < xN-1");
+                throw new ArgumentOutOfRangeException("Abscissas do not satisfy the condition: x0 < x1 < ... < xN-1");
             }
         }
 
@@ -95,18 +98,26 @@ public class PiecewiseLinearFunction : IParametricFunction
             var y1 = values[i + 1];
 
             var dx = x1 - x0;
-            var t = (x - x0) / dx;
-            var s = (y1 - y0) / dx;
+            var dy = y1 - y0;
 
-            
+            //df/dx
+            var dfdx = -dy/dx;
 
-            // ∂f/∂x_i и ∂f/∂x_{i+1}
-            gradient[2 * i] = -s * (x1 - x) / dx;
-            gradient[2 * (i + 1)] = -s * t;
+            for(int k = 0; k <= i; ++k)
+                gradient[k * 2] = dfdx;
 
-            // ∂f/∂y_i и ∂f/∂y_{i+1}
-            gradient[2 * i + 1] = 1 - t;
-            gradient[2 * (i + 1) + 1] = t;
+            //df/d(dx)
+            var dfddx = -dy * (x - x0) / dx / dx;
+
+            gradient[2 * (i + 1)] = dfddx;
+
+            //df/dy
+
+            var dfdy1 = (x - x0) / dx;
+            var dfdy0 = 1d - dfdy1;
+
+            gradient[2 * i + 1] = dfdy0;
+            gradient[2 * (i + 1) + 1] = dfdy1;
 
             return gradient;
         }

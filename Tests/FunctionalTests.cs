@@ -57,11 +57,11 @@ public class FunctionalTests
         
         //gradient tests
         Vector[] ExpectedGradientsL1 = [new([0d,4d,5d]),
-                                        new([-1.2,0.6,-2.6,2.2,7.8,1.8,3.8,-1.4,0.2,-0.2])];
+                                        new([8d, 0.6, 9.2, 2.2, 11.8, 1.8, 4d, -1.4, 0.2, -0.2])];
         Vector[] ExpectedGradientsL2 = [new([0.241666837915904, 4.2809554145103, 2.20952537523112]),
-                                        new([-0.0986393923832147, 0.0493196961916073, -0.690475746682503,
-                                             0.657595949221431, 2.96740172086171, 0.682255797317235,
-                                             1.1014732149459, -0.805555037796253, 0.0904194430179468,-0.0904194430179468])];
+                                        new([3.37017923975984, 0.0493196961916073, 3.46881863214305,
+                                             0.657595949221431, 4.15929437882555, 0.682255797317235,
+                                             1.19189265796384, -0.805555037796253, 0.0904194430179468, -0.0904194430179468])];
 
 
         L1NormGradientTestData = L1NormValueTestData.Take(2).Select((el,i) => new TheoryDataRow<IVector, IParametricFunction, IDifferentiableFunctional, IVector>(el.Data.Item1,el.Data.Item2, (IDifferentiableFunctional)el.Data.Item3, ExpectedGradientsL1[i]));
