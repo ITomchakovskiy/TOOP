@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TOOP.Functions;
 
-class QuadraticBezierFunction : IParametricFunction
+public class QuadraticBezierFunction : IParametricFunction
 {
     private readonly double _xMin;
     private readonly double _xMax;

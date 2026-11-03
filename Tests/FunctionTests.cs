@@ -28,6 +28,7 @@ public class FunctionTests
         {
             0 => [new([0d,0d]),new([2d,0d]),new([0d,3d]),new([6d,2d])], //for linear
             1 => [new([1d]),new([2.5d]), new([3d]), new([5d]), new([6d]), new([7.5d]), new([8d])],
+            2 => [new([0.2]),new([0.5]),new([0.8])], //quadraticBezier
             _ => throw new ArgumentOutOfRangeException()
         };
         return arguments;
@@ -173,6 +174,26 @@ public class FunctionTests
     {
         FunctionValueTest(parametersSet, pointSet, expected, CreatePolynimialFunctionParameters, new PolynomialFunction());
     }
+
+    private static Vector CreateQuadraticBezierFunctionParameters(int num)
+    {
+        Vector parameters = num switch
+        {
+            0 => new([3d,1d,2d]),
+            _ => throw new NotImplementedException()
+        };
+        return parameters;
+    }
+
+    public static IEnumerable<TheoryDataRow<int,int,double[],double,double>> QuadraticBezierFunctionTestData =>
+    [
+        new(0,2,[2.32,1.75,1.72],0d,1d)
+    ];
+
+    [Theory]
+    [MemberData(nameof(QuadraticBezierFunctionTestData))]
+    public void QuadraticBezierFunctionValueTest(int parametersSet, int pointsSet, double[] expected, double xMin, double xMax) =>
+        FunctionValueTest(parametersSet, pointsSet, expected, CreateQuadraticBezierFunctionParameters, new QuadraticBezierFunction(xMin,xMax));
 }
 
 
