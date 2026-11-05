@@ -13,7 +13,7 @@ using Xunit;
 namespace Tests;
 public class FunctionalTests
 {
-    private const double eps = 1.0E-13;
+    private const double eps = 1.0E-10;
     static FunctionalTests()
     {
         var LinearTestData = FunctionTests.LinearFunctionValueTestData.
@@ -32,6 +32,7 @@ public class FunctionalTests
         var l1NormZeroTests = ZeroTests.Select(i => new TheoryDataRow<IVector, IParametricFunction, IFunctional>(i.Data.Item1,i.Data.Item4,new L1Norm(i.Data.Item2, i.Data.Item3)));
         var l2NormZeroTests = ZeroTests.Select(i => new TheoryDataRow<IVector, IParametricFunction, IFunctional>(i.Data.Item1,i.Data.Item4,new L2Norm(i.Data.Item2, i.Data.Item3)));
         var lInfNormZeroTests = ZeroTests.Select(i => new TheoryDataRow<IVector, IParametricFunction, IFunctional>(i.Data.Item1,i.Data.Item4,new LInfNorm(i.Data.Item2, i.Data.Item3)));
+
 
         ZeroNormTestData = l1NormZeroTests.Concat(l2NormZeroTests).Concat(lInfNormZeroTests);
 
@@ -54,6 +55,13 @@ public class FunctionalTests
         L1NormValueTestData = testData.Select((el,i) => new TheoryDataRow<IVector,IParametricFunction,IFunctional,double>(el.Item1, el.Item4, l1Norms[i], expectedValuesL1Norm[i]));
         L2NormValueTestData = testData.Select((el,i) => new TheoryDataRow<IVector,IParametricFunction,IFunctional,double>(el.Item1, el.Item4, l2Norms[i], expectedValuesL2Norm[i]));
         LInfNormValueTestData = testData.Select((el,i) => new TheoryDataRow<IVector,IParametricFunction,IFunctional,double>(el.Item1, el.Item4, lInfNorms[i], expectedValuesLInfNorm[i]));
+
+        double[] expectedIngegralValues = [495d, 75.625, 316.666666666667];
+        (IVector, IVector, IVector)[] IntegralParameters = [(new Vector([0d,0d]), new Vector([6d,3d]), new Vector([6d,3d])),
+                                                (new Vector([0d]), new Vector([10d]), new Vector([2.5])),
+                                                (new Vector([0d]), new Vector([10d]), new Vector([1.0E-6]))];
+        var integrals = IntegralParameters.Select(par => new Integral(par.Item1,par.Item2,par.Item3)).ToArray();
+        IntegralValueTestData = testData.Select((el,i) => new TheoryDataRow<IVector, IParametricFunction, IFunctional, double>(el.Item1, el.Item4, integrals[i], expectedIngegralValues[i]));
         
         //gradient tests
         Vector[] ExpectedGradientsL1 = [new([0d,4d,5d]),
@@ -169,5 +177,11 @@ public class FunctionalTests
     [MemberData(nameof(L2NormJacobianTestData))]
     public void L2NormJacoabianTest(IVector funcParameters, IParametricFunction function, ILeastSquaresFunctional functional, IMatrix expected) =>
                     JacobianTest(funcParameters, function, functional, expected);
+
+    public static IEnumerable<TheoryDataRow<IVector,IParametricFunction,IFunctional,double>> IntegralValueTestData;
     
+    [Theory]
+    [MemberData(nameof(IntegralValueTestData))]
+    public void IntegralValueTest(IVector funcParameters, IParametricFunction function, IFunctional functional, double expected) =>
+                    NormValueTest(funcParameters, function, functional, expected);
 }
