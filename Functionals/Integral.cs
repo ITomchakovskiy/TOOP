@@ -9,18 +9,17 @@ namespace Functionals;
 
 public class Integral : IFunctional
 {
-    readonly Real _volume;
-    readonly IVector[] _samples;
+    private readonly Real _cellVolume;
+    private readonly IVector _lower;
+    private readonly IVector _upper;
+    private readonly IVector _H;
+    private readonly int _N;
 
-    public Integral(IVector lower, IVector upper, int sampleCount = 1000, int? seed = null)
+    public Integral(IVector lower, IVector upper, IVector H, int? seed = null)
     {
-        if (lower.Length == 0 || lower.Length != upper.Length)
+        if (lower.Length == 0 || lower.Length != upper.Length || H.Length != lower.Length)
         {
-            throw new ArgumentException("Lower and upper bounds must have the same positive length.");
-        }
-        if (sampleCount < 1)
-        {
-            throw new ArgumentException("At least one sample is required.", nameof(sampleCount));
+            throw new ArgumentException("Lower and upper bounds and H must have the same positive length.");
         }
 
         for (var i = 0; i < lower.Length; i++)
@@ -31,38 +30,43 @@ public class Integral : IFunctional
             }
         }
 
+        _H = new Vector([..H]);
+
         Real volume = 1;
+        int N = 1;
         for (var i = 0; i < lower.Length; i++)
         {
-            volume *= upper[i] - lower[i];
+            var segmentLength = upper[i] - lower[i];
+            var segmentsCount = (int)Math.Ceiling(segmentLength / H[i]);
+            _H[i] = segmentLength / segmentsCount;
+            volume *= _H[i];
+            N *= segmentsCount;
         }
-        _volume = volume;
-
-        Random random = seed is null ?
-            new Random() :
-            new Random(seed.Value);
-
-        _samples = new IVector[sampleCount];
-        for (var i = 0; i < sampleCount; i++)
-        {
-            var point = new Real[lower.Length];
-            for (var dimension = 0; dimension < lower.Length; dimension++)
-            {
-                point[dimension] = lower[dimension] + random.NextDouble() * (upper[dimension] - lower[dimension]);
-            }
-
-            _samples[i] = new Vector(point);
-        }
+        _cellVolume = volume;
+        _N = N;
+        _lower = lower;
+        _upper = upper;
     }
 
     public Real Value(IFunction function)
     {
-        Real sum = 0;
-        for (var i = 0; i < _samples.Length; i++)
+        Real sum = 0d;
+        for(int i = 0; i < _N; ++i) //cells
         {
-            sum += function.Value(_samples[i]);
+            Vector center = new(_lower.Length);
+            var ind = i;
+            for(int j = 0; j < center.Length; ++j)
+            {
+                var segmentLength = _upper[j] - _lower[j];
+                var segmentsCount = (int)(segmentLength / _H[j]);
+                var curInd = ind % segmentsCount;
+                var x0 = _lower[j] + _H[j] * curInd;
+                var x1 = curInd != segmentsCount - 1 ? x0 + _H[j] : _upper[j];
+                center[j] = (x0 + x1) / 2d;
+                ind /= segmentsCount;
+            }
+            sum += function.Value(center);
         }
-
-        return _volume * sum / _samples.Length;
+        return sum * _cellVolume;
     }
 }
