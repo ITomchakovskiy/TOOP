@@ -14,6 +14,8 @@ public abstract class OneDimensionalOptimizator
                                     IParametricFunction function,
                                     IVector initialParameters,
                                     IVector direction,
+                                    IVector? minimumParameters = null,
+                                    IVector? maximumParameters = null,
                                     double minimumCoefficient = 0d,
                                     double? maximumCoefficient = null, 
                                     double precision = 1.0E-7);
@@ -21,32 +23,33 @@ public abstract class OneDimensionalOptimizator
                                              IParametricFunction function,
                                              IVector initialParameters,
                                              IVector direction,
+                                             IVector? minimumParameters = null,
+                                             IVector? maximumParameters = null,
                                              double initialStep = 1.0E-7,
                                              double stepMultiplyer = 2,
                                              double minimumCoefficient = 0d,
                                              int maxIter = 1000000)
     {
-        double result = double.MaxValue;
         var initialParametersVector = new Vector([.. initialParameters]);
         var directionVector = new Vector([.. direction]);
         var func = function.Bind(initialParameters);
         var minValue = objective.Value(func);
-        bool isFound = false;
         var step = initialStep;
-        for(;!isFound; step *= stepMultiplyer)
+        for(int i = 0; i < maxIter; step *= stepMultiplyer)
         {
             var coefficient = minimumCoefficient + step;
             var parameters = initialParametersVector + directionVector * coefficient;
+            if(minimumParameters is not null) parameters = Vector.ClampFloor(parameters, minimumParameters);
+            if(maximumParameters is not null) parameters = Vector.ClampCeiling(parameters, maximumParameters);
             func = function.Bind(parameters);
             var curValue = objective.Value(func);
             if(curValue > minValue)
             {
-                result = minimumCoefficient;
-                isFound = true;
+                return step;
             }
             else minValue = curValue;
         }
-        return result;
+        return double.MaxValue;
     }
 }
 
@@ -55,15 +58,22 @@ public class GoldenSectionSearch : OneDimensionalOptimizator
     private readonly double coef = (3d - Math.Sqrt(5d)) / 2d;
     private double calcLeftPoint(double a, double b) => a * (1d - coef) + b * coef;
     private double calcRightPoint(double a, double b) => b * (1d - coef) + a * coef;
-    public override double Minimize(IFunctional objective, IParametricFunction function, IVector initialParameters, IVector direction, double minimumCoefficient = 0, double? maximumCoefficient = null, double precision = 1.0E-7)
+
+    public override double Minimize(IFunctional objective, IParametricFunction function, IVector initialParameters, IVector direction, IVector? minimumParameters = null, IVector? maximumParameters = null, double minimumCoefficient = 0, double? maximumCoefficient = null, double precision = 1.0E-7)
     {
         Vector initialParametersVector = new([.. initialParameters]);
         Vector directionVector = new([.. direction]);
-        maximumCoefficient ??= CalculateMaximumParameter(objective, function, initialParameters, direction);
+        maximumCoefficient ??= CalculateMaximumParameter(objective, function, initialParameters, direction, minimumParameters, maximumParameters);
         double coefficient1 = calcLeftPoint(minimumCoefficient, (double)maximumCoefficient);
-        double val1 = objective.Value(function.Bind(initialParametersVector + directionVector * coefficient1));
+        IVector parameters = initialParametersVector + directionVector * coefficient1;
+        if(minimumParameters is not null) parameters = Vector.ClampFloor(parameters, minimumParameters);
+        if(maximumParameters is not null) parameters = Vector.ClampCeiling(parameters, maximumParameters);
+        double val1 = objective.Value(function.Bind(parameters));
         double coefficient2 = calcRightPoint(minimumCoefficient, (double)maximumCoefficient);
-        double val2 = objective.Value(function.Bind(initialParametersVector + directionVector * coefficient2));
+        parameters = initialParametersVector + directionVector * coefficient2;
+        if(minimumParameters is not null) parameters = Vector.ClampFloor(parameters, minimumParameters);
+        if(maximumParameters is not null) parameters = Vector.ClampCeiling(parameters, maximumParameters);
+        double val2 = objective.Value(function.Bind(parameters));
         while((maximumCoefficient - minimumCoefficient) >= precision)
         {
             if(val1 < val2)
@@ -72,7 +82,10 @@ public class GoldenSectionSearch : OneDimensionalOptimizator
                 coefficient2 = coefficient1;
                 val2 = val1;
                 coefficient1 = calcLeftPoint(minimumCoefficient, (double)maximumCoefficient);
-                val1 = objective.Value(function.Bind(initialParametersVector + directionVector * coefficient1));
+                parameters = initialParametersVector + directionVector * coefficient1;
+                if(minimumParameters is not null) parameters = Vector.ClampFloor(parameters, minimumParameters);
+                if(maximumParameters is not null) parameters = Vector.ClampCeiling(parameters, maximumParameters);
+                val1 = objective.Value(function.Bind(parameters));
             }
             else
             {
@@ -80,9 +93,12 @@ public class GoldenSectionSearch : OneDimensionalOptimizator
                 coefficient1 = coefficient2;
                 val1 = val2;
                 coefficient2 = calcRightPoint(minimumCoefficient, (double)maximumCoefficient);
-                val2 = objective.Value(function.Bind(initialParametersVector + directionVector * coefficient2));
+                parameters = initialParametersVector + directionVector * coefficient2;
+                if(minimumParameters is not null) parameters = Vector.ClampFloor(parameters, minimumParameters);
+                if(maximumParameters is not null) parameters = Vector.ClampCeiling(parameters, maximumParameters);
+                val2 = objective.Value(function.Bind(parameters));
             }
         }
-        return (double)((maximumCoefficient - minimumCoefficient) / 2d);
+        return (double)((maximumCoefficient + minimumCoefficient) / 2d);
     }
 }
