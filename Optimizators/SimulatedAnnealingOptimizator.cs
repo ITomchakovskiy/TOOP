@@ -10,9 +10,11 @@ namespace Optimizators;
 
 public class SimulatedAnnealingOptimizator : IOptimizator
 {
-    public SimulatedAnnealingOptimizator(int seed) {random = new Random(seed);}
-    public SimulatedAnnealingOptimizator() {random = new Random();}
-    private Random random;
+    private const double eps = 1.0E-7;
+    private const int maxiter = 10000000;
+    //public SimulatedAnnealingOptimizator(int seed) {random = new Random(seed);}
+    //public SimulatedAnnealingOptimizator() {random = new Random();}
+    private Random random = Random.Shared;
     private static double AcceptanceProbability(double f0, double f1, double t) => f1 < f0 ? 1.0 : Math.Exp(-(f1 - f0) / t);
     private double Normal(double mu, double sigma)
     {
@@ -33,7 +35,7 @@ public class SimulatedAnnealingOptimizator : IOptimizator
         return new Vector(x1);
     }
 
-    public IVector Minimize(IFunctional objective, IParametricFunction function, IVector initialParameters, IVector? minimumParameters, IVector? maximumParameters, double precision = 1.0E-7, int maxIterationCount = 1000000, double initialTemperature = 1d)
+    public IVector Minimize(IFunctional objective, IParametricFunction function, IVector initialParameters, IVector? minimumParameters, IVector? maximumParameters, double precision = eps, int maxIterationCount = maxiter, double initialTemperature = 1d)
     {
         if(minimumParameters is null)
         {
@@ -53,15 +55,16 @@ public class SimulatedAnnealingOptimizator : IOptimizator
         var func = function.Bind(x0);
         var f0 = objective.Value(func);
 
-
         var temperature = initialTemperature;
-        for (int k = 0; temperature > precision && k < maxIterationCount; ++k)
+        maxIterationCount = Math.Min(maxIterationCount, (int)Math.Exp(initialTemperature/precision));
+        for (int k = 0; k < maxIterationCount; ++k)
         {
             temperature = initialTemperature / (1 + Math.Log(1 + k));
-            var x1 = Neighbour(x0, minimumParameters, maximumParameters, temperature);
+            //temperature = initialTemperature * (1 - k / maxiter);
+            var x1 = Neighbour(x0, minimumParameters, maximumParameters, 0.3 * temperature);
             func = function.Bind(x1);
             var f1 = objective.Value(func);
-            var probability = AcceptanceProbability(f0, f1, temperature);
+            var probability = AcceptanceProbability(f0, f1,temperature);
 
             if (probability >= random.NextDouble())
             {
@@ -74,6 +77,6 @@ public class SimulatedAnnealingOptimizator : IOptimizator
 
     public IVector Minimize(IFunctional objective, IParametricFunction function, IVector initialParameters, IVector? minimumParameters = null, IVector? maximumParameters = null)
     {
-        return Minimize(objective, function, initialParameters, minimumParameters, maximumParameters);
+        return Minimize(objective, function, initialParameters, minimumParameters, maximumParameters,eps);
     }
 }
