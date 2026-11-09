@@ -14,7 +14,7 @@ namespace Optimizators;
 public class GaussNewtonOptimizator : IOptimizator
 {
     private const double eps = 1.0E-7;
-    private const int maxiter = 1000000;
+    private const int maxiter = 10000000;
     public IVector Minimize(ILeastSquaresFunctional objective, IParametricFunction function, IVector initialParameters, IVector? minimumParameters = null, IVector? maximumParameters = null, double precision = eps, int maxIterationCount = maxiter)
     {
         Vector parameters = new([.. initialParameters]);
@@ -30,13 +30,31 @@ public class GaussNewtonOptimizator : IOptimizator
             IMatrix A = MatrixOperators.Multiply(TransposedJacobian, Jacobian);
             Vector b = -new Vector([.. MatrixOperators.Multiply(TransposedJacobian, objective.Residual(func))]);
             solver ??= SLAESolverSelector.Select(A);
-            if(solver.Solve(A, b, out IVector delta,null,null,null))
-            if(delta.Norm() < precision) return parameters;
-            parameters += new Vector([..delta]);
-            if(minimumParameters is not null)
-                parameters = new([..parameters.Select((el,i) => Math.Max(el, minimumParameters[i]))]);
-            if(maximumParameters is not null)
-                parameters = new([..parameters.Select((el,i) => Math.Min(el, maximumParameters[i]))]);
+
+            for(int p = 1; ; p*=10)
+            {
+                if(solver.Solve(A, b, out IVector delta,null,null,null))
+                {
+                    if(delta.Norm() < precision) return parameters;
+                    parameters += new Vector([..delta]);
+                    if(minimumParameters is not null)
+                        parameters = Vector.ClampFloor(parameters, minimumParameters);
+                    if(maximumParameters is not null)
+                        parameters = Vector.ClampCeiling(parameters, maximumParameters);
+                    break;
+                }
+                double[][] regularizationValues = new double[A.RowsCount][];
+                for(int i = 0; i < regularizationValues.Length; ++i)
+                {
+                    regularizationValues[i] = new double[i+1];
+                    regularizationValues[i][i] = precision * p;
+                }
+                A = MatrixOperators.Add(A, new DenseMatrix(regularizationValues, MatrixSymmetry.Symmetric, true)); //
+            }
+            // if(minimumParameters is not null)
+            //     parameters = new([..parameters.Select((el,i) => Math.Max(el, minimumParameters[i]))]);
+            // if(maximumParameters is not null)
+            //     parameters = new([..parameters.Select((el,i) => Math.Min(el, maximumParameters[i]))]);
         }
         return parameters;
     }
