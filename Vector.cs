@@ -25,6 +25,24 @@ public class Vector : IVector
     IEnumerator IEnumerable.GetEnumerator() => values.GetEnumerator();
     public double Norm() => Math.Sqrt(values.Sum(d => d * d));
 
+    public static Vector Clamp(IVector value, IVector minValues, IVector maxValues)
+    {
+        if(value.Length != minValues.Length || value.Length != maxValues.Length) throw new ArgumentException("operation on non-matching vectors");
+        return new Vector([.. Enumerable.Range(0, value.Length).Select(i => Math.Clamp(value[i],minValues[i],maxValues[i]))]);
+    }
+
+    public static Vector ClampFloor(IVector value, IVector minValues)
+    {
+        if(value.Length != minValues.Length) throw new ArgumentException("operation on non-matching vectors");
+        return new Vector([.. Enumerable.Range(0,value.Length).Select(i => Math.Max(value[i],minValues[i]))]);
+    }
+
+    public static Vector ClampCeiling(IVector value, IVector maxValues)
+    {
+        if(value.Length != maxValues.Length) throw new ArgumentException("operation on non-matching vectors");
+        return new Vector([.. Enumerable.Range(0,value.Length).Select(i => Math.Min(value[i],maxValues[i]))]);
+    }
+
     public static Vector operator +(Vector A, Vector B)
     {
         if(A.Length != B.Length) throw new ArgumentException("operation on non-matching vectors");
