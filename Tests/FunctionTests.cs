@@ -47,7 +47,7 @@ public class FunctionTests
             double diff = actual[i] - expected[i]; diff *= diff;
             res += diff;
         }
-        Assert.Equal(0d, res, eps);
+        Assert.Equal(0d, Math.Sqrt(res), eps);
     }
 
     public static IEnumerable<TheoryDataRow<int,int,double[]>> LinearFunctionValueTestData =>
@@ -86,7 +86,7 @@ public class FunctionTests
             double diff = (actual[i] - expected[i]).Norm(); diff *= diff;
             res += diff;
         }
-        Assert.InRange(res, 0d, eps);
+        Assert.Equal(0d, Math.Sqrt(res), eps);
     }
 
     public static Vector CreatePiecewiseFunctionParameters(int num)
@@ -145,7 +145,7 @@ public class FunctionTests
             double diff = (actual[i] - expected[i]).Norm(); diff *= diff;
             res += diff;
         }
-        Assert.InRange(res, 0d, eps);
+        Assert.Equal(0d, Math.Sqrt(res), eps);
     }
 
     public static Vector CreatePolynimialFunctionParameters(int num)
