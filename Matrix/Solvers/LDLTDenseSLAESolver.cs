@@ -33,7 +33,7 @@ class LDLTDenseSLAESolver : ISLAESolver
             }
         }
         decomposedMatrix = matrix;
-        LDLT = new GeneralDenseMatrix(LDLTValues);
+        LDLT = new GeneralDenseMatrix(LDLTValues, MatrixSymmetry.Symmetric);
     }
     bool ISLAESolver.Solve(IMatrix? matrix, IVector rightSide, out IVector result, double? precision, int? maxIterationCount, IVector? initialSolution)
     {
